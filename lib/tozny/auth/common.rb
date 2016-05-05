@@ -1,6 +1,7 @@
 require 'openssl'
 require 'base64'
 require 'json'
+require 'securerandom'
 
 module Tozny
   class Core
@@ -21,12 +22,15 @@ module Tozny
     end
     def self.encode_and_sign(data, secret)
       encoded_data = base64url_encode(data)
-      sig=OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha256'), secret, encoded_data)
+      sig=OpenSSL::HMAC.digest(OpenSSL::Digest.new('sha256'), secret, encoded_data)
       encoded_sig = base64url_encode(sig)
       return {
           :signed_data => encoded_data,
           :signature => encoded_sig
       }
+    end
+    def self.generate_nonce
+      OpenSSL::Digest::SHA256.hexdigest SecureRandom.random_bytes(8)
     end
   end
 end

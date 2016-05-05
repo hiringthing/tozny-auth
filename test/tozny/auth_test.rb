@@ -2,6 +2,10 @@ require 'test_helper'
 class Tozny::AuthTest < Minitest::Test
   @@secret = 'notsosecretafterallisitnow?'
 
+  def setup
+    @realm = ::Tozny::Realm.new('SEQRDSTAR', 'DEADBEEF3', 'http://api.local.tozny.com:8090/index.php')
+  end
+
   def test_that_it_has_a_version_number
     refute_nil ::Tozny::Auth::VERSION
   end
@@ -22,14 +26,12 @@ class Tozny::AuthTest < Minitest::Test
                                           @@secret)
   end
   def test_encode_and_sign
-    assert_equal ::Tozny::Core::encode_and_sign('just yet another test...', @@secret), {
+    assert_equal ({
         :signed_data => "anVzdCB5ZXQgYW5vdGhlciB0ZXN0Li4u",
-        :signature => "ZjU4OTk0YTdjZjYwMmQzYWViOTBlMGNkNTgxODE0MjM3MmE2MmVjMjk4NmY4NmQwZmJmZTA5YTMxYTg5MTNmOQ"
-    }
+        :signature => "9YmUp89gLTrrkODNWBgUI3KmLsKYb4bQ-_4JoxqJE_k"
+    }), ::Tozny::Core::encode_and_sign('just yet another test...', @@secret)
   end
-  def test_temp
-    assert_equal ::Tozny::Realm, ::Tozny::Auth::Realm
-    assert_equal ::Tozny::User, ::Tozny::Auth::User
-
+  def test_realm_call
+    assert @realm.raw_call({:method=>'realm.realm_get'})[:return] == "ok"
   end
 end
