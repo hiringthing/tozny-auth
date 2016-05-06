@@ -38,4 +38,7 @@ class Tozny::AuthTest < Minitest::Test
   def test_smoke_test_call
     assert @user.raw_call({:method => 'test.smoke', :do_smoke => TRUE})[:return] == 'ok'
   end
+  def test_smoke_test_call_via_realm
+    assert @realm.user_api.raw_call({:method => 'test.smoke', :do_smoke => TRUE})[:return] == 'ok'
+  end
 end

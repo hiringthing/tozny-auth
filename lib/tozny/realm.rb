@@ -1,16 +1,17 @@
-require 'tozny/auth/common'
+require 'tozny/user'
 require 'json'
 require 'net/http'
 require 'uri'
 
 module Tozny
   class Realm
-    attr_accessor :realm_key_id, :realm_secret, :api_url
+    attr_accessor :realm_key_id, :realm_secret, :api_url, :user_api
 
     def initialize(realm_key_id, realm_secret, api_url = nil)
       #self.realm_key_id = realm_key_id
       #self.realm_secret = realm_secret
-      self.set_new_realm(realm_key_id, realm_secret)
+
+      #set the API URL
       if !api_url.nil?
         self.api_url = api_url
       elsif !(ENV['API_URL'].nil?)
@@ -18,13 +19,22 @@ module Tozny
       else
         self.api_url='https://api.tozny.com/index.php'
       end
-      self.api_url = URI.parse(self.api_url)
+      if !self.api_url.is_a? URI #don't try to parse a URI instance into a URI, as this will break
+        self.api_url = URI.parse(self.api_url)
+      end
+
+      self.set_new_realm(realm_key_id, realm_secret)
 
     end
 
     def set_new_realm (realm_key_id, realm_secret)
       self.realm_key_id = realm_key_id
       self.realm_secret = realm_secret
+      if self.user_api.is_a? ::Tozny::User
+        self.user_api.set_new_realm(realm_key_id)
+      else
+        self.user_api = ::Tozny::User.new(realm_key_id, api_url)
+      end
     end
 
     def raw_call(request_obj)

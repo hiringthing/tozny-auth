@@ -4,7 +4,7 @@ module Tozny
   class User
     attr_accessor :realm_key_id, :api_url
     def initialize(realm_key_id, api_url = nil)
-      self.set_new_realm(realm_key_id)
+
       if !api_url.nil?
         self.api_url = api_url
       elsif !(ENV['API_URL'].nil?)
@@ -12,8 +12,11 @@ module Tozny
       else
         self.api_url='https://api.tozny.com/index.php'
       end
-      self.api_url = URI.parse(self.api_url)
+      if !self.api_url.is_a? URI
+        self.api_url = URI.parse(self.api_url)
+      end
 
+      self.set_new_realm(realm_key_id)
     end
 
     def set_new_realm (realm_key_id)
