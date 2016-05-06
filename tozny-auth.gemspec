@@ -9,9 +9,9 @@ Gem::Specification.new do |spec|
   spec.authors       = ["emanb29"]
   spec.email         = ["eb@ethanbell.me"]
 
-  spec.summary       = %q{TODO: Write a short summary, because Rubygems requires one.}
-  spec.description   = %q{TODO: Write a longer description or delete this line.}
-  spec.homepage      = "TODO: Put your gem's website or public repo URL here."
+  spec.summary       = %q{Tozny Ruby SDK}
+  spec.description   = %q{A set of methods to more conveniently access the Tozny authentication API as a RP of Tozny from Ruby}
+  spec.homepage      = "https://github.com/tozny/sdk-ruby"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
   # to allow pushing to a single host or delete this section to allow pushing to any host.

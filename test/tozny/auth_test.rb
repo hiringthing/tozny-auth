@@ -4,6 +4,7 @@ class Tozny::AuthTest < Minitest::Test
 
   def setup
     @realm = ::Tozny::Realm.new('SEQRDSTAR', 'DEADBEEF3', 'http://api.local.tozny.com:8090/index.php')
+    @user = ::Tozny::User.new('SEQRDSTAR', 'http://api.local.tozny.com:8090/index.php');
   end
 
   def test_that_it_has_a_version_number
@@ -27,11 +28,14 @@ class Tozny::AuthTest < Minitest::Test
   end
   def test_encode_and_sign
     assert_equal ({
-        :signed_data => "anVzdCB5ZXQgYW5vdGhlciB0ZXN0Li4u",
-        :signature => "9YmUp89gLTrrkODNWBgUI3KmLsKYb4bQ-_4JoxqJE_k"
+        :signed_data => 'anVzdCB5ZXQgYW5vdGhlciB0ZXN0Li4u',
+        :signature => '9YmUp89gLTrrkODNWBgUI3KmLsKYb4bQ-_4JoxqJE_k'
     }), ::Tozny::Core::encode_and_sign('just yet another test...', @@Test_Secret)
   end
   def test_realm_call
-    assert @realm.raw_call({:method=>'realm.realm_get'})[:return] == "ok"
+    assert @realm.raw_call({:method=>'realm.realm_get'})[:return] == 'ok'
+  end
+  def test_smoke_test_call
+    assert @user.raw_call({:method => 'test.smoke', :do_smoke => TRUE})[:return] == 'ok'
   end
 end
