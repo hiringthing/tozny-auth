@@ -1,6 +1,6 @@
 require 'test_helper'
 class Tozny::AuthTest < Minitest::Test
-  @@secret = 'notsosecretafterallisitnow?'
+  @@Test_Secret = 'notsosecretafterallisitnow?'
 
   def setup
     @realm = ::Tozny::Realm.new('SEQRDSTAR', 'DEADBEEF3', 'http://api.local.tozny.com:8090/index.php')
@@ -23,13 +23,13 @@ class Tozny::AuthTest < Minitest::Test
   def test_check_signature
     assert ::Tozny::Core::check_signature('0e8ebea5a44f8d126102f4413335bb257a56e349a9584815a2c517c64fdc7491',
                                           'this is a test string for HMAC hashing in tozny\'s SDK-Ruby',
-                                          @@secret)
+                                          @@Test_Secret)
   end
   def test_encode_and_sign
     assert_equal ({
         :signed_data => "anVzdCB5ZXQgYW5vdGhlciB0ZXN0Li4u",
         :signature => "9YmUp89gLTrrkODNWBgUI3KmLsKYb4bQ-_4JoxqJE_k"
-    }), ::Tozny::Core::encode_and_sign('just yet another test...', @@secret)
+    }), ::Tozny::Core::encode_and_sign('just yet another test...', @@Test_Secret)
   end
   def test_realm_call
     assert @realm.raw_call({:method=>'realm.realm_get'})[:return] == "ok"
