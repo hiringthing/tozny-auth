@@ -19,6 +19,13 @@ module Tozny
       self.set_new_realm(realm_key_id)
     end
 
+    def check_session_status(session_id)
+      raw_call({
+        :method => 'user.check_session_status',
+        :session_id => session_id
+      }).has_key?(:signed_data)
+    end
+
     def set_new_realm (realm_key_id)
       self.realm_key_id = realm_key_id
     end

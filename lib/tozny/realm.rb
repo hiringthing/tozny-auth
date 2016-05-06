@@ -37,6 +37,22 @@ module Tozny
       end
     end
 
+    def check_login_locally(signed_data, signature)
+      if check_signature(signed_data, signature)
+        JSON.parse(::Tozny::Core.base64url_decode(signed_data))
+      else
+        false
+      end
+    end
+
+    def check_login_via_api(user_id, session_id) #NOTE: this only returns true/false. You need to parse the data locally. See Tozny::Core.base64url_decode
+      raw_call({
+        :method => 'realm.check_valid_login',
+        :user_id => user_id,
+        :session_id => session_id
+      })[:return] == 'true'
+    end
+
     def raw_call(request_obj)
       request_obj[:nonce] = Tozny::Core.generate_nonce #generate the nonce
       request_obj[:expires_at] = Time.now.to_i + 5*60 # UNIX timestamp for now +5 min
