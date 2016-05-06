@@ -24,7 +24,7 @@ module Tozny
       encoded_data = base64url_encode(data)
       sig=OpenSSL::HMAC.digest(OpenSSL::Digest.new('sha256'), secret, encoded_data)
       encoded_sig = base64url_encode(sig)
-      return {
+      return { #behold, the rare return statement
           :signed_data => encoded_data,
           :signature => encoded_sig
       }

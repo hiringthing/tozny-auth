@@ -35,8 +35,10 @@ module Tozny
       else
         self.user_api = ::Tozny::User.new(realm_key_id, api_url)
       end
+      true
     end
 
+    # verify a login and extract user information from a signed packet forwarded to the server
     def check_login_locally(signed_data, signature)
       if check_signature(signed_data, signature)
         JSON.parse(::Tozny::Core.base64url_decode(signed_data))
@@ -55,7 +57,7 @@ module Tozny
 
     def raw_call(request_obj)
       request_obj[:nonce] = Tozny::Core.generate_nonce #generate the nonce
-      request_obj[:expires_at] = Time.now.to_i + 5*60 # UNIX timestamp for now +5 min
+      request_obj[:expires_at] = Time.now.to_i + 5*60 # UNIX timestamp for now +5 min TODO: does this work with check_login_via_api, or should it default to a passed in expires_at?
       if !request_obj.key?('realm_key_id') && !request_obj.key?(:realm_key_id) #check for both string and symbol
         #TODO: how should we handle conflicts of symbol and string keys?
         request_obj[:realm_key_id] = realm_key_id

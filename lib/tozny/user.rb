@@ -1,4 +1,4 @@
-require "tozny/auth/common"
+require 'tozny/auth/common'
 
 module Tozny
   class User

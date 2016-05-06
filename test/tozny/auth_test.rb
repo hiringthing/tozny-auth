@@ -4,7 +4,7 @@ class Tozny::AuthTest < Minitest::Test
 
   def setup
     @realm = ::Tozny::Realm.new('SEQRDSTAR', 'DEADBEEF3', 'http://api.local.tozny.com:8090/index.php')
-    @user = ::Tozny::User.new('SEQRDSTAR', 'http://api.local.tozny.com:8090/index.php');
+    @user = ::Tozny::User.new('SEQRDSTAR', 'http://api.local.tozny.com:8090/index.php')
   end
 
   def test_that_it_has_a_version_number

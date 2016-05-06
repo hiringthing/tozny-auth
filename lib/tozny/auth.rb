@@ -1,6 +1,6 @@
-require "tozny/auth/version"
-require "tozny/realm"
-require "tozny/user"
+require 'tozny/auth/version'
+require 'tozny/realm'
+require 'tozny/user'
 
 module Tozny
   module Auth
