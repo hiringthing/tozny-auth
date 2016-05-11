@@ -30,6 +30,7 @@ In your template, include jQuery and the Tozny jQuery library:
 
 In your controller (assuming you have access to a rails-like `params` hash):
 ```ruby
+require 'tozny/auth'
 realm_key_id = 'sid_123456789'
 realm_secret = '6f75.....190a8dbc7'
 tozny = Tozny::Realm.new(realm_key_id, realm_secret)
