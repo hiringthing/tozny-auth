@@ -19,7 +19,7 @@ module Tozny
       else
         self.api_url='https://api.tozny.com/index.php'
       end
-      if !self.api_url.is_a? URI #don't try to parse a URI instance into a URI, as this will break
+      unless self.api_url.is_a? URI #don't try to parse a URI instance into a URI, as this will break
         self.api_url = URI.parse(self.api_url)
       end
 
