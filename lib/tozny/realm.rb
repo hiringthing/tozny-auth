@@ -103,7 +103,7 @@ module Tozny
     # update a user's meta fields
     # * Note: all meta fields are stored as strings
     # @param [String] user_id
-    # @param [Hash<Symbol,String=>Object>] meta the metadata fields to update, along with their new values
+    # @param [Hash{Symbol,String=>Object}] meta the metadata fields to update, along with their new values
     # @return [Hash] the updated user
     def user_update(user_id, meta)
       raw_call({
@@ -155,8 +155,47 @@ module Tozny
                })
     end
 
+    # create an OOB challenge question session
+    # @param [Hash<Symbol, String>, String] question either a question hash, as specified by the options, or the text of a question to be presented to the user. Required.
+    # @option question [String] :question The text of the question to be presented to the user
+    # @option question [String] :success The URL the user's browser should be redirected to after successful authentication
+    # @option question [String] :error The URL the user's browser should be redirected to after unsuccessful authentication
+    # @param [String] success_url The URL the user's browser should be redirected to after successful authentication if not specified in the question object
+    # @param [String] error_url The URL the user's browser should be redirected to after unsuccessful authentication if not specified in the question object
+    # @param [String] user_id optional. The user who should answer the question.
+    # TODO: support URI objects instead of strings for success and error
+    # @return [Hash] the result of the API call
+    def question_challenge(question, success_url, error_url, user_id)
+      raise ArgumentError, 'question must either be a string or an options hash as specified' unless question.is_a?String or question.is_a?Hash
+      final_question = nil #scope final_question and prevent linting errors
+      if question.is_a?Hash
+        final_question = question
+        final_question[:type] = 'callback'
+      else
+        if success_url.is_a?String or error_url.is_a?String
+          final_question = {
+              :type => 'callback',
+              :question => question
+          }
+          final_question[:success] = success_url if success_url.is_a?String
+          final_question[:error] = error_url if error_url.is_a?String
+        else
+          final_question = {
+              :type => 'question',
+              :question => question
+          }
+        end
+      end
+      request_obj = {
+          :method => 'realm.question_challenge',
+          :question => final_question
+      }
+      request_obj[:user_id] = user_id if user_id.is_a?String
+      raw_call request_obj
+    end
+
     # perform a raw(ish) API call
-    # @param [Hash <Symbol, String => Object>] request_obj The request to conduct. Should include a :method at the least. Prefer symbol keys to string keys
+    # @param [Hash{Symbol, String => Object}] request_obj The request to conduct. Should include a :method at the least. Prefer symbol keys to string keys
     # @return [Object] The parsed result of the request. NOTE: most types will be stringified for most requests
     def raw_call(request_obj)
       request_obj[:nonce] = Tozny::Core.generate_nonce #generate the nonce
