@@ -36,7 +36,7 @@ tozny = Tozny::Realm.new(realm_key_id, realm_secret)
 
 if params[:tozny_action] == 'tozny_login'
   user = tozny.check_login_locally(params[:signed_data], params[:signature])
-  if user.is_a?Hash
+  if user and user.is_a?Hash
     # Do some cool stuff with the user, because this was a successful login.
   else
     # Be sad (or happy in some cases) because the user did not log in successfully.
