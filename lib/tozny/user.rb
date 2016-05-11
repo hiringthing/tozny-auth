@@ -12,7 +12,8 @@ module Tozny
       else
         self.api_url='https://api.tozny.com/index.php'
       end
-      if !self.api_url.is_a? URI
+
+      unless self.api_url.is_a? URI
         self.api_url = URI.parse(self.api_url)
       end
 
@@ -26,11 +27,16 @@ module Tozny
       }).has_key?(:signed_data)
     end
 
+    # use a new realm_key_id
+    # @param [String] realm_key_id
+    # @return [TrueClass] will always return true
     def set_new_realm (realm_key_id)
       self.realm_key_id = realm_key_id
+      true
     end
+
     def raw_call(request_obj)
-      if !request_obj.key?('realm_key_id') && !request_obj.key?(:realm_key_id) #check for both string and symbol
+      unless request_obj.key?('realm_key_id') || request_obj.key?(:realm_key_id) #check for both string and symbol
         #TODO: how should we handle conflicts of symbol and string keys?
         request_obj[:realm_key_id] = realm_key_id
       end
