@@ -29,10 +29,10 @@ r3HosQKBgQC7IW8fkWdpU1E4i1oXcq/spV0Rh4+ypzlwF21jdGi8VRC0UKwqqGEk
 vG7RLDJQpMqLND2KljPX+DmyJHri7Kjutt8uENIhY9dY1ETp8rR4alZaZiN6y2ya
 Ok7+tYSk4rtO10wFQfcorrUnijEMDB0hX77/wuSVB4X3ERApwEjPTA==
 -----END RSA PRIVATE KEY-----'
-  #@@Current_User =
+  @@Current_User_ID = 'sid_57336b8ae6b48'
   def setup
-    @realm = ::Tozny::Realm.new('SEQRDSTAR', 'DEADBEEF3', 'http://api.local.tozny.com:8090/index.php')
-    @user = ::Tozny::User.new('SEQRDSTAR', 'http://api.local.tozny.com:8090/index.php')
+    @realm = ::Tozny::Realm.new('sid_57336b6f61e32', 'a1519ec9b125e28545b67cdabe2ecd4f43044ff957be8507644362c36d012b8b', 'http://api.local.tozny.com:8090/index.php')
+    @user = ::Tozny::User.new('sid_57336b6f61e32', 'http://api.local.tozny.com:8090/index.php')
   end
 
   def test_that_it_has_a_version_number
@@ -69,10 +69,18 @@ Ok7+tYSk4rtO10wFQfcorrUnijEMDB0hX77/wuSVB4X3ERApwEjPTA==
   def test_smoke_test_call_via_realm
     assert @realm.user_api.raw_call({:method => 'test.smoke', :do_smoke => TRUE})[:return] == 'ok'
   end
-  def test_create_user
-    assert @realm.user_add('false', {name=>'emanb2998'}, OpenSSL::PKey::RSA.new(@@New_User_Key).public_key.to_s)[:return] == 'ok'
+  def test_create_delete_user
+    user = @realm.user_add('false', {name=>'emanb2998'}, OpenSSL::PKey::RSA.new(@@New_User_Key).public_key.to_s)
+    assert user[:return] == 'ok'
+    assert @realm.user_delete(user[:user_id])[:return] == 'ok'
+  end
+  def test_user_get
+    Integer(@realm.user_get(@@Current_User_ID)[:meta][:testNum]) #we don't need an 'assert' here because an exception will fail the test
   end
   def test_user_update
-
+    new_number = Random.rand(2000)
+    user_meta = @realm.user_get(@@Current_User_ID)[:meta] #TODO: should this be dependant on test_user_get? probably. Does minitest support test dependencies?
+    user_meta[:testNum] = new_number
+    assert @realm.user_update(@@Current_User_ID, user_meta)[:meta][:testNum] == new_number.to_s
   end
 end

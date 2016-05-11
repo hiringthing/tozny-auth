@@ -48,7 +48,9 @@ module Tozny
     # @return [Hash, FalseClass] the login information or false if the login did not check out
     def check_login_locally(signed_data, signature)
       if check_signature(signed_data, signature)
-        JSON.parse(::Tozny::Core.base64url_decode(signed_data))
+        login_info = JSON.parse(::Tozny::Core.base64url_decode(signed_data))
+        return false if login_info[:expires_at] < Time.now.to_i
+        login_info
       else
         false
       end
@@ -68,31 +70,79 @@ module Tozny
 
     # Add a user to a closed realm
     # @param [String] defer 'true' or 'false', defines whether the user should be deferred to later be completed by the app
-    # @param [Hash] metadata any metadata to be added to the user_meta
+    # @param [Hash] meta any metadata to be added to the user (eg, favorite color or mother's home address). All meta will be stored as strings
     # @param [String, OpenSSL::PKey::RSA] pub_key the public key of the user to be added. Only necessary
     # @return [Hash, FalseClass] the user in its current (incomplete if defer is 'true' state)
-    def user_add(defer = 'false', metadata, pub_key)
-      if pub_key.is_a? String
-        pub_key = OpenSSL::PKey::RSA.new pub_key
+    # @raise ArgumentError if there is no pubkey when there should be one
+    def user_add(defer = 'false', meta, pub_key)
+      unless pub_key.nil?
+        if pub_key.is_a? String
+          pub_key = OpenSSL::PKey::RSA.new pub_key
+        end
+        pub_key = pub_key.public_key if pub_key.private?
       end
-      pub_key = pub_key.public_key if pub_key.private?
 
       request_obj = {
-          :method => 'realm.user_add'
+          :method => 'realm.user_add',
+          :defer => defer
       }
       if defer == 'false'
-        throw :must_have_pub_key_if_deferred if pub_key.nil?
+        raise ArgumentError, 'Must provide a public key if not using deferred enrollment' if pub_key.nil?
         request_obj[:pub_key] = pub_key
       end
 
-      unless metadata.nil?
-        extra_fields = Tozny::Core.base64url_encode(metadata.to_json)
-        request_obj[:extra_fields] = extra_fields
+      unless meta.nil?
+        request_obj[:extra_fields] = Tozny::Core.base64url_encode(meta.to_json)
       end
 
       user = raw_call request_obj
       return false unless user[:return] == 'ok'
       user
+    end
+
+    # update a user's meta fields
+    # * Note: all meta fields are stored as strings
+    # @param [String] user_id
+    # @param [Hash<Symbol,String=>Object>] meta the metadata fields to update, along with their new values
+    # @return [Hash] the updated user
+    def user_update(user_id, meta)
+      raw_call({
+          :method => 'realm.user_update',
+          :user_id => user_id,
+          :extra_fields => Tozny::Core::base64url_encode(meta.to_json)
+               })
+    end
+
+    # @param [String] user_id
+    # @return [Hash] the result of the request to the API
+    def user_delete(user_id)
+      raw_call({
+               :method => 'realm.user_delete',
+               :user_id => user_id
+               })
+    end
+
+    # retrieve a user's information
+    # * Note: all meta fields are stored as strings
+    # @param [String] user_id the id or email (if is_id = false) of the user to get
+    # @param [Boolean] is_id true if looking up the user by id, false if looking up by email. defaults to true
+    # @return [Hash] the user's information
+    # @raise ArgumentError on failed lookup
+    def user_get(user_id, is_id = true)
+      request_obj = {
+          :method => 'realm.user_get'
+      }
+      if is_id
+        request_obj[:user_id] = user_id
+      else
+        request_obj[:tozny_email] = user_id
+      end
+
+      user = raw_call(request_obj)
+      if user.nil? or user[:results].nil?
+        raise ArgumentError, ('No user was found for '+(is_id ? 'id' : 'email')+': '+user_id+'.')
+      end
+      user[:results]
     end
 
     def raw_call(request_obj)
@@ -106,7 +156,8 @@ module Tozny
       request_url = api_url #copy the URL to a local variable so that we can add the query params
       request_url.query = URI.encode_www_form encoded_params #encode signed_data and signature as query params
       #p request_url
-      JSON.parse(Net::HTTP.get(request_url), {:symbolize_names => true}) #TODO: handle errors
+      http_result = Net::HTTP.get(request_url)
+      JSON.parse(http_result, {:symbolize_names => true}) #TODO: handle errors
     end
   end
 end

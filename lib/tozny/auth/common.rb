@@ -4,6 +4,7 @@ require 'json'
 require 'securerandom'
 
 module Tozny
+  # utility class for tozny-specific cryptography and encoding
   class Core
 
     # encodes a string according to the base64url specification, including removing padding
