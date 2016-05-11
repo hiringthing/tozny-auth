@@ -35,6 +35,9 @@ module Tozny
       true
     end
 
+    # perform a raw(ish) API call
+    # @param [Hash <Symbol, String => Object>] request_obj The request to conduct. Should include a :method at the least. Prefer symbol keys to string keys
+    # @return [Object] The parsed result of the request. NOTE: most types will be stringified for most requests
     def raw_call(request_obj)
       unless request_obj.key?('realm_key_id') || request_obj.key?(:realm_key_id) #check for both string and symbol
         #TODO: how should we handle conflicts of symbol and string keys?

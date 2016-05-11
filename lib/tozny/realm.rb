@@ -145,6 +145,19 @@ module Tozny
       user[:results]
     end
 
+    # performs a device add call
+    # @param [String] user_id
+    # @return [Hash] the result of the call: keys include  :user_id, :temp_key, :secret_enrollment_url, and :key_id
+    def user_device_add(user_id)
+      raw_call({
+          :method=>'realm.user_device_add',
+          :user_id=>user_id
+               })
+    end
+
+    # perform a raw(ish) API call
+    # @param [Hash <Symbol, String => Object>] request_obj The request to conduct. Should include a :method at the least. Prefer symbol keys to string keys
+    # @return [Object] The parsed result of the request. NOTE: most types will be stringified for most requests
     def raw_call(request_obj)
       request_obj[:nonce] = Tozny::Core.generate_nonce #generate the nonce
       request_obj[:expires_at] = Time.now.to_i + 5*60 # UNIX timestamp for now +5 min TODO: does this work with check_login_via_api, or should it default to a passed in expires_at?
