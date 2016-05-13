@@ -8,6 +8,7 @@ Gem::Specification.new do |spec|
   spec.version       = Tozny::Auth::VERSION
   spec.authors       = ['Ethan Bell / emanb29']
   spec.email         = ['eb@ethanbell.me']
+  spec.license       = 'Apache-2.0'
 
   spec.summary       = %q{Tozny Ruby SDK}
   spec.description   = %q{A set of methods to more conveniently access the Tozny authentication API as a RP of Tozny from Ruby}
@@ -29,4 +30,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'bundler', '~> 1.12'
   spec.add_development_dependency 'rake', '~> 10.0'
   spec.add_development_dependency 'minitest', '~> 5.0'
+
+  # Only with ruby 2.0.x
+  spec.required_ruby_version = '~> 2.0'
 end
