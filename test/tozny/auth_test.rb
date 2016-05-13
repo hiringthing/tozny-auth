@@ -29,10 +29,10 @@ r3HosQKBgQC7IW8fkWdpU1E4i1oXcq/spV0Rh4+ypzlwF21jdGi8VRC0UKwqqGEk
 vG7RLDJQpMqLND2KljPX+DmyJHri7Kjutt8uENIhY9dY1ETp8rR4alZaZiN6y2ya
 Ok7+tYSk4rtO10wFQfcorrUnijEMDB0hX77/wuSVB4X3ERApwEjPTA==
 -----END RSA PRIVATE KEY-----'
-  @@Current_User_ID = 'sid_57336b8ae6b48'
+  @@Current_User_ID = 'VALID USER ID FOR YOUR REALM HERE. THIS USER MUST HAVE A META FIELD "testNum" WITH AN INTEGER IN IT'
   def setup
-    @realm = ::Tozny::Realm.new('sid_57336b6f61e32', 'a1519ec9b125e28545b67cdabe2ecd4f43044ff957be8507644362c36d012b8b', 'http://api.local.tozny.com:8090/index.php')
-    @user = ::Tozny::User.new('sid_57336b6f61e32', 'http://api.local.tozny.com:8090/index.php')
+    @realm = ::Tozny::Realm.new('VALID REALM KEY ID HERE', 'VALID REALM SECRET HERE', 'https://api.tozny.com/index.php')
+    @user = ::Tozny::User.new('VALID REALM KEY ID HERE', 'https://api.tozny.com/index.php')
   end
 
   def test_that_it_has_a_version_number
