@@ -55,11 +55,11 @@ realm_secret = '6f75.....190a8dbc7'
 tozny = Tozny::Realm.new(realm_key_id, realm_secret)
 
 tozny.otp_challenge('sms-otp-6', '8005551234', nil, {foo: 'bar'})
-#or alternatively (for a 6 digit OTP -- you cannot do an 8 digit OTP using the following method)
+# or alternatively (for a 6 digit OTP -- you cannot do an 8 digit OTP using the following method)
 tozny.sms_otp('8005551234', {foo: 'bar'})
-#or, if you don't need custom data, and you have unauthenticated OTP enabled in your realm's admin console:
+# or, if you don't need custom data, and you have unauthenticated OTP enabled in your realm's admin console:
 tozny.user_api.otp_challenge('sms-otp-6', '8005551234')
-#finally, if you already have an otp 'presence' you can use that instead of the type and destination:
+# finally, if you already have an otp 'presence' you can use that instead of the type and destination:
 tozny.otp_challenge(presence='237fa....af794')
 ```
 
