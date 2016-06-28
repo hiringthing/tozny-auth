@@ -47,7 +47,7 @@ module Tozny
     # @return [Hash] a hash including the signed_data and a signature
     def self.encode_and_sign(data, secret)
       encoded_data = base64url_encode(data)
-      sig=OpenSSL::HMAC.digest(OpenSSL::Digest.new('sha256'), secret, encoded_data)
+      sig = OpenSSL::HMAC.digest(OpenSSL::Digest.new('sha256'), secret, encoded_data)
       encoded_sig = base64url_encode(sig)
       return {
           #behold, the rare return statement

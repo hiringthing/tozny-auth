@@ -46,6 +46,38 @@ module Tozny
       raw_call request_obj
     end
 
+    # Create an OTP challenge session
+    # @return [Hash] a hash [session_id, presence] containing an OTP session id and an OTP presence (an alias for a type-destination combination)
+    # @param [String] type one of 'sms-otp-6', 'sms-otp-8': the type of the OTP to send
+    # @param [String] destination the destination for the OTP. For an SMS OTP, this should be a phone number
+    # @param [String] presence can be used instead of 'type' and 'destination': an OTP presence provided by the TOZNY API
+    # @raise ArgumentError when not enough information to submit an OTP request
+    # @raise ArgumentError on invalid request type
+    def otp_challenge(type, destination, presence=nil)
+      p "type: #{type}, dest: #{destination}, pres: #{presence}, data: #{data}"
+      raise ArgumentError, 'must provide either a presence or a type and destination' if (type.nil? || destination.nil?) && presence.nil?
+      request_obj = {
+          method: 'user.otp_challenge'
+      }
+      if presence.nil?
+        raise ArgumentError, "request type must one of 'sms-otp-6' or 'sms-otp-8'" unless %w(sms-otp-6 sms-otp-8).include? type
+        request_obj[:type] = type
+        # TODO: consider validating that 'destination' is a valid phone number when 'type' is sms-otp-*
+        request_obj[:destination] = destination
+      else
+        request_obj[:presence] = presence
+      end
+      raw_call request_obj
+    end
+
+    # Check an OTP against an OTP session
+    # @param [String] session_id the OTP session to validate
+    # @param [String] otp the OTP to check
+    # @return [Hash] The signed_data and signature containing a session ID and metadata, if any, on success. Otherwise, error[s].
+    def otp_result(session_id, otp)
+      raw_call(method: 'user.otp_result', session_id: session_id, otp: otp)
+    end
+
     # Perform a raw(ish) API call
     # @param [Hash{Symbol, String => Object}] request_obj The request to conduct. Should include a :method at the least. Prefer symbol keys to string keys
     # @return [Object] The parsed result of the request. NOTE: most types will be stringified for most requests

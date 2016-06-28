@@ -202,7 +202,7 @@ module Tozny
     # @param [String] type one of 'sms-otp-6', 'sms-otp-8': the type of the OTP to send
     # @param [String] destination the destination for the OTP. For an SMS OTP, this should be a phone number
     # @param [String] presence can be used instead of 'type' and 'destination': an OTP presence provided by the TOZNY API
-    # @param [Object] data passthru data to be added to the signed response on a successful request
+    # @param [Object] data optional passthru data to be added to the signed response on a successful request
     # @raise ArgumentError when not enough information to submit an OTP request
     # @raise ArgumentError on invalid request type
     def otp_challenge(type, destination, presence=nil, data=nil)
@@ -221,6 +221,15 @@ module Tozny
         request_obj[:presence] = presence
       end
       raw_call request_obj
+    end
+
+    # Shorthand method to send an 6-digit OTP via SMS without a presence token
+    # @param destination @see(otp_challenge)
+    # @param data @see(otp_challenge)
+    # @return @see(otp_challenge)
+    def sms_otp(destination, data = nil)
+      # TODO: validate that 'destination' is a phone number
+      otp_challenge('sms-otp-6', destination, nil, data)
     end
 
     # push to a user's device based off of their id, email, or username
