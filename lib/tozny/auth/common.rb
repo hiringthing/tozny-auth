@@ -12,9 +12,9 @@ module Tozny
     # @return [String] the base64url-encoded string
     def self.base64url_encode(str)
       Base64::strict_encode64(
-          str #str to decode
-        ) #remove padding
-        .tr('+/', '-_') #replace + with - and / with _
+          str
+        )
+        .tr('+/', '-_')
         .tr('=', '')
     end
 
@@ -22,15 +22,18 @@ module Tozny
     # @param [String] str the base64url-encoded string
     # @return [String] the decoded plaintext string
     def self.base64url_decode(str)
-      Base64::strict_decode64(str.tr('-_', '+/') #replace - with + and _ with /
-        .ljust(str.length+(str.length % 4), '=')) #add padding
+      Base64::strict_decode64(
+          str.tr('-_', '+/')
+          .ljust(str.length+(str.length % 4), '='))
+        # replace - with + and _ with /
+        # add padding
     end
 
     # checks the HMAC/SHA256 signature of a string
     # @param [String] signature the signature to check against
     # @param [String] str the signed data to check the signature against
     # @param [String] secret the secret to check the signature against
-    # @return [Boolean] whether the signature matched
+    # @return [TrueClass, FalseClass] whether the signature matched
     def self.check_signature(signature, str, secret)
       expected_sig = OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha256'), secret, str)
       expected_sig == signature
@@ -46,7 +49,8 @@ module Tozny
       encoded_data = base64url_encode(data)
       sig=OpenSSL::HMAC.digest(OpenSSL::Digest.new('sha256'), secret, encoded_data)
       encoded_sig = base64url_encode(sig)
-      return { #behold, the rare return statement
+      return {
+          #behold, the rare return statement
           :signed_data => encoded_data,
           :signature => encoded_sig
       }

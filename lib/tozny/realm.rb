@@ -74,7 +74,7 @@ module Tozny
     # @param [String, OpenSSL::PKey::RSA] pub_key the public key of the user to be added. Only necessary
     # @return [Hash, FalseClass] the user in its current (incomplete if defer is 'true' state)
     # @raise ArgumentError if there is no pubkey when there should be one
-    def user_add(defer = 'false', meta, pub_key)
+    def user_add(defer = 'false', meta = nil, pub_key)
       unless pub_key.nil?
         if pub_key.is_a? String
           pub_key = OpenSSL::PKey::RSA.new pub_key
@@ -125,7 +125,7 @@ module Tozny
     # retrieve a user's information
     # * Note: all meta fields are stored as strings
     # @param [String] user_id the id or email (if is_id = false) of the user to get
-    # @param [Boolean] is_id true if looking up the user by id, false if looking up by email. defaults to true
+    # @param [TrueClass, FalseClass] is_id true if looking up the user by id, false if looking up by email. defaults to true
     # @return [Hash] the user's information
     # @raise ArgumentError on failed lookup
     def user_get(user_id, is_id = true)
@@ -163,6 +163,7 @@ module Tozny
     # @param [String] success_url The URL the user's browser should be redirected to after successful authentication if not specified in the question object
     # @param [String] error_url The URL the user's browser should be redirected to after unsuccessful authentication if not specified in the question object
     # @param [String] user_id optional. The user who should answer the question.
+    # @raise ArgumentError on invalid question type
     # TODO: support URI objects instead of strings for success and error
     # @return [Hash] the result of the API call
     def question_challenge(question, success_url, error_url, user_id)
@@ -191,6 +192,57 @@ module Tozny
           :question => final_question
       }
       request_obj[:user_id] = user_id if user_id.is_a?String
+      raw_call request_obj
+    end
+
+    # Create an OTP challenge session
+    # @return [Hash] a hash [session_id, presence] containing an OTP session id and an OTP presence (an alias for a type-destination combination)
+    # @param [String] type one of 'sms-otp-6', 'sms-otp-8': the type of the OTP to send
+    # @param [String] destination the destination for the OTP. For an SMS OTP, this should be a phone number
+    # @param [String] presence can be used instead of 'type' and 'destination': an OTP presence provided by the TOZNY API
+    # @param [Object] data passthru data to be added to the signed response on a successful request
+    # @raise ArgumentError when not enough information to submit an OTP request
+    # @raise ArgumentError on invalid request type
+    def otp_challenge(type, destination, presence=nil, data=nil)
+      p "type: #{type}, dest: #{destination}, pres: #{presence}, data: #{data}"
+      raise ArgumentError, 'must provide either a presence or a type and destination' if ((type.nil? || destination.nil?) && presence.nil?)
+      request_obj = {
+          :method => 'realm.otp_challenge',
+          :data => data
+      }
+      if presence.nil?
+        raise ArgumentError, ("request type must one of 'sms-otp-6' or 'sms-otp-8'") unless (%w(sms-otp-6 sms-otp-8).include? type)
+        request_obj[:type] = type
+        # TODO: consider validating that 'destination' is a valid phone number when 'type' is sms-otp-*
+        request_obj[:destination] = destination
+      else
+        request_obj[:presence] = presence
+      end
+      raw_call request_obj
+    end
+
+    # push to a user's device based off of their id, email, or username
+    # @raise ArgumentError when not enough information is provided to find the user
+    # @param [String] session_id optional a valid Tozny session_id
+    # @param [String] user_id optional a Tozny user_id
+    # @param [String] email optional an email for a field associated with tozny_email
+    # @param [String] username optional a username for a field associated with tozny_username
+    # @return [Hash {Symbol => String, Integer, Array<TrueClass, FalseClass>}] the result of the push attempt. Will be true if any device owned by the user is successfully sent a push.
+    def user_push(session_id= nil, user_id = nil, email = nil, username = nil)
+      raise ArgumentError, ("must provide either a Tozny user id, a tozny_email, or a tozny_username in order to find the user to push to") if
+          (user_id.nil? && email.nil? && username.nil?)
+      session_id ||= user_api.login_challenge[:session_id]
+      request_obj = {
+          :method => 'realm.user_push',
+          :session_id => session_id
+      }
+      if !user_id.nil?
+        request_obj[:user_id] = user_id
+      elsif !email.nil?
+        request_obj[:tozny_email] = email
+      elsif !username.nil?
+        request_obj[:tozny_username] = username
+      end
       raw_call request_obj
     end
 

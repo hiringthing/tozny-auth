@@ -1,0 +1,6 @@
+Metrics/LineLength:
+  Enabled: false
+Rails:
+  Enabled: false
+Style/SpaceInsideHashLiteralBraces:
+  Enabled: false

@@ -20,6 +20,9 @@ module Tozny
       self.set_new_realm(realm_key_id)
     end
 
+    # check the status of a session
+    # @param [String] session_id the session to check
+    # @return [TrueClass, FalseClass] 'true' if the use has logged in with the session, false otherwise
     def check_session_status(session_id)
       raw_call({
         :method => 'user.check_session_status',
@@ -35,7 +38,19 @@ module Tozny
       true
     end
 
-    # perform a raw(ish) API call
+    # Generate a new login challenge session
+    # @param [TrueClass, FalseClass] user_add optional: whether or not to create an enrollment challenge rather than an authentication challenge
+    # @return [Hash] a challenge session (:challenge, :realm_key_id, :session_id, :qr_url, :mobile_url, :created_at, :presence = "")
+    def login_challenge(user_add = nil)
+      request_obj = {
+        :method => 'user.login_challenge'
+      }
+      request_obj[:user_add] = user_add if user_add
+      raw_call request_obj
+
+    end
+
+    # Perform a raw(ish) API call
     # @param [Hash{Symbol, String => Object}] request_obj The request to conduct. Should include a :method at the least. Prefer symbol keys to string keys
     # @return [Object] The parsed result of the request. NOTE: most types will be stringified for most requests
     def raw_call(request_obj)

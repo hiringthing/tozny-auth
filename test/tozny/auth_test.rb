@@ -46,41 +46,54 @@ Ok7+tYSk4rtO10wFQfcorrUnijEMDB0hX77/wuSVB4X3ERApwEjPTA==
   def test_b64url_decode
     assert ::Tozny::Core::base64url_decode('dGVzdG9kZHBhZA') == 'testoddpad'
   end
+
   def test_b64url_encode
     assert ::Tozny::Core::base64url_encode('testoddpad') == 'dGVzdG9kZHBhZA'
   end
+
   def test_check_signature
     assert ::Tozny::Core::check_signature('0e8ebea5a44f8d126102f4413335bb257a56e349a9584815a2c517c64fdc7491',
                                           'this is a test string for HMAC hashing in tozny\'s SDK-Ruby',
                                           @@Test_Secret)
   end
+
   def test_encode_and_sign
     assert_equal ({
-        :signed_data => 'anVzdCB5ZXQgYW5vdGhlciB0ZXN0Li4u',
-        :signature => '9YmUp89gLTrrkODNWBgUI3KmLsKYb4bQ-_4JoxqJE_k'
-    }), ::Tozny::Core::encode_and_sign('just yet another test...', @@Test_Secret)
+      :signed_data => 'anVzdCB5ZXQgYW5vdGhlciB0ZXN0Li4u',
+      :signature => '9YmUp89gLTrrkODNWBgUI3KmLsKYb4bQ-_4JoxqJE_k'
+    }), ::Tozny::Core.encode_and_sign('just yet another test...', @@Test_Secret)
   end
+
   def test_realm_call
-    assert @realm.raw_call({:method=>'realm.realm_get'})[:return] == 'ok'
+    assert @realm.raw_call(:method => 'realm.realm_get')[:return] == 'ok'
   end
+
   def test_smoke_test_call
-    assert @user.raw_call({:method => 'test.smoke', :do_smoke => TRUE})[:return] == 'ok'
+    assert @user.raw_call(:method => 'test.smoke', :do_smoke => TRUE)[:return] == 'ok'
   end
+
   def test_smoke_test_call_via_realm
-    assert @realm.user_api.raw_call({:method => 'test.smoke', :do_smoke => TRUE})[:return] == 'ok'
+    assert @realm.user_api.raw_call(:method => 'test.smoke', :do_smoke => TRUE)[:return] == 'ok'
   end
+
   def test_create_delete_user
-    user = @realm.user_add('false', {name=>'emanb2998'}, OpenSSL::PKey::RSA.new(@@New_User_Key).public_key.to_s)
+    user = @realm.user_add('false', {name => 'emanb2998'}, OpenSSL::PKey::RSA.new(@@New_User_Key).public_key.to_s)
     assert user[:return] == 'ok'
     assert @realm.user_delete(user[:user_id])[:return] == 'ok'
   end
+
   def test_user_get
-    Integer(@realm.user_get(@@Current_User_ID)[:meta][:testNum]) #we don't need an 'assert' here because an exception will fail the test
+    Integer(@realm.user_get(@@Current_User_ID)[:meta][:testNum]) # we don't need an 'assert' here because an exception will fail the test
   end
+
   def test_user_update
     new_number = Random.rand(2000)
-    user_meta = @realm.user_get(@@Current_User_ID)[:meta] #TODO: should this be dependant on test_user_get? probably. Does minitest support test dependencies?
+    user_meta = @realm.user_get(@@Current_User_ID)[:meta] # TODO: should this be dependant on test_user_get? probably. Does minitest support test dependencies?
     user_meta[:testNum] = new_number
     assert @realm.user_update(@@Current_User_ID, user_meta)[:meta][:testNum] == new_number.to_s
+  end
+
+  def test_login_challenge
+    assert defined? @user.login_challenge(true)[:session_id]
   end
 end
