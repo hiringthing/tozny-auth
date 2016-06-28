@@ -23,10 +23,10 @@ module Tozny
     # @return [String] the decoded plaintext string
     def self.base64url_decode(str)
       Base64::strict_decode64(
-          str.tr('-_', '+/')
-          .ljust(str.length+(str.length % 4), '='))
+        str.tr('-_', '+/')
+        .ljust(str.length+(str.length % 4), '='))
         # replace - with + and _ with /
-        # add padding
+        # then add padding
     end
 
     # checks the HMAC/SHA256 signature of a string
@@ -49,10 +49,9 @@ module Tozny
       encoded_data = base64url_encode(data)
       sig = OpenSSL::HMAC.digest(OpenSSL::Digest.new('sha256'), secret, encoded_data)
       encoded_sig = base64url_encode(sig)
-      return {
-          #behold, the rare return statement
-          signed_data: encoded_data,
-          signature: encoded_sig
+      {
+        signed_data: encoded_data,
+        signature: encoded_sig
       }
     end
 

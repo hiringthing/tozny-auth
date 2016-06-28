@@ -10,22 +10,19 @@ module Tozny
     attr_accessor :realm_key_id, :realm_secret, :api_url, :user_api
 
     def initialize(realm_key_id, realm_secret, api_url = nil)
-      #self.realm_key_id = realm_key_id
-      #self.realm_secret = realm_secret
-
-      #set the API URL
+      # set the API URL
       if !api_url.nil?
         self.api_url = api_url
       elsif !(ENV['API_URL'].nil?)
-        self.api_url=ENV['API_URL']
+        self.api_url = ENV['API_URL']
       else
-        self.api_url='https://api.tozny.com/index.php'
+        self.api_url = 'https://api.tozny.com/index.php'
       end
-      unless self.api_url.is_a? URI #don't try to parse a URI instance into a URI, as this will break
+      unless self.api_url.is_a? URI # don't try to parse a URI instance into a URI, as this will break
         self.api_url = URI.parse(self.api_url)
       end
 
-      self.set_new_realm(realm_key_id, realm_secret)
+      set_new_realm(realm_key_id, realm_secret)
 
     end
 
@@ -33,11 +30,11 @@ module Tozny
     # @param [String] realm_key_id
     # @param [String] realm_secret
     # @return [TrueClass] will always return true
-    def set_new_realm (realm_key_id, realm_secret)
+    def set_new_realm(realm_key_id, realm_secret)
       self.realm_key_id = realm_key_id
       self.realm_secret = realm_secret
-      if self.user_api.is_a? ::Tozny::User
-        self.user_api.set_new_realm(realm_key_id)
+      if user_api.is_a? ::Tozny::User
+        user_api.set_new_realm(realm_key_id)
       else
         self.user_api = ::Tozny::User.new(realm_key_id, api_url)
       end
@@ -62,12 +59,12 @@ module Tozny
     # @param [String] user_id the user_id of the login to check
     # @param [String] session_id the session_id of the login to check
     # @return [Hash] the return from the API
-    def check_login_via_api(user_id, session_id) #NOTE: this only returns true/false. You need to parse the data locally. See Tozny::Core.base64url_decode
-      raw_call({
+    def check_login_via_api(user_id, session_id) # NOTE: this only returns true/false. You need to parse the data locally. See Tozny::Core.base64url_decode
+      raw_call(
         method: 'realm.check_valid_login',
         user_id: user_id,
         session_id: session_id
-      })[:return] == 'true'
+      )[:return] == 'true'
     end
 
     # Add a user to a closed realm
@@ -78,15 +75,13 @@ module Tozny
     # @raise ArgumentError if there is no pubkey when there should be one
     def user_add(defer = 'false', meta = nil, pub_key)
       unless pub_key.nil?
-        if pub_key.is_a? String
-          pub_key = OpenSSL::PKey::RSA.new pub_key
-        end
+        pub_key = OpenSSL::PKey::RSA.new pub_key if pub_key.is_a? String
         pub_key = pub_key.public_key if pub_key.private?
       end
 
       request_obj = {
-          method: 'realm.user_add',
-          defer: defer
+        method: 'realm.user_add',
+        defer: defer
       }
       if defer == 'false'
         raise ArgumentError, 'Must provide a public key if not using deferred enrollment' if pub_key.nil?
@@ -108,20 +103,20 @@ module Tozny
     # @param [Hash{Symbol,String=>Object}] meta the metadata fields to update, along with their new values
     # @return [Hash] the updated user
     def user_update(user_id, meta)
-      raw_call({
-          method: 'realm.user_update',
-          user_id: user_id,
-          extra_fields: Tozny::Core::base64url_encode(meta.to_json)
-               })
+      raw_call(
+        method: 'realm.user_update',
+        user_id: user_id,
+        extra_fields: Tozny::Core.base64url_encode(meta.to_json)
+      )
     end
 
     # @param [String] user_id
     # @return [Hash] the result of the request to the API
     def user_delete(user_id)
-      raw_call({
-               method: 'realm.user_delete',
-               user_id: user_id
-               })
+      raw_call(
+        method: 'realm.user_delete',
+        user_id: user_id
+      )
     end
 
     # retrieve a user's information
@@ -132,7 +127,7 @@ module Tozny
     # @raise ArgumentError on failed lookup
     def user_get(user_id, is_id = true)
       request_obj = {
-          method: 'realm.user_get'
+        method: 'realm.user_get'
       }
       if is_id
         request_obj[:user_id] = user_id
@@ -141,8 +136,8 @@ module Tozny
       end
 
       user = raw_call(request_obj)
-      if user.nil? or user[:results].nil?
-        raise ArgumentError, ('No user was found for '+(is_id ? 'id' : 'email')+': '+user_id+'.')
+      if user.nil? || user[:results].nil?
+        raise ArgumentError, ('No user was found for ' + (is_id ? 'id' : 'email') + ': ' + user_id + '.')
       end
       user[:results]
     end
@@ -151,10 +146,10 @@ module Tozny
     # @param [String] user_id
     # @return [Hash] the result of the call: keys include  :user_id, :temp_key, :secret_enrollment_url, and :key_id
     def user_device_add(user_id)
-      raw_call({
-          method:'realm.user_device_add',
-          user_id:user_id
-               })
+      raw_call(
+        method: 'realm.user_device_add',
+        user_id: user_id
+      )
     end
 
     # create an OOB challenge question session
@@ -169,29 +164,27 @@ module Tozny
     # TODO: support URI objects instead of strings for success and error
     # @return [Hash] the result of the API call
     def question_challenge(question, success_url, error_url, user_id)
-      raise ArgumentError, 'question must either be a string or an options hash as specified' unless question.is_a?String or question.is_a?Hash
-      final_question = nil #scope final_question and prevent linting errors
+      raise ArgumentError, 'question must either be a string or an options hash as specified' unless (question.is_a?String) || (question.is_a?Hash)
+      final_question = nil # scope final_question and prevent linting errors
       if question.is_a?Hash
         final_question = question
         final_question[:type] = 'callback'
+      elsif (success_url.is_a?String) || (error_url.is_a?String)
+        final_question = {
+          type: 'callback',
+          question: question
+        }
+        final_question[:success] = success_url if success_url.is_a?String
+        final_question[:error] = error_url if error_url.is_a?String
       else
-        if (success_url.is_a?String) || (error_url.is_a?String)
-          final_question = {
-              type: 'callback',
-              question: question
-          }
-          final_question[:success] = success_url if success_url.is_a?String
-          final_question[:error] = error_url if error_url.is_a?String
-        else
-          final_question = {
-              type: 'question',
-              question: question
-          }
-        end
+        final_question = {
+          type: 'question',
+          question: question
+        }
       end
       request_obj = {
-          method: 'realm.question_challenge',
-          question: final_question
+        method: 'realm.question_challenge',
+        question: final_question
       }
       request_obj[:user_id] = user_id if user_id.is_a?String
       raw_call request_obj
@@ -205,16 +198,15 @@ module Tozny
     # @param [Object] data optional passthru data to be added to the signed response on a successful request
     # @raise ArgumentError when not enough information to submit an OTP request
     # @raise ArgumentError on invalid request type
-    def otp_challenge(type, destination, presence=nil, data=nil)
+    def otp_challenge(type, destination, presence = nil, data = nil)
       raise ArgumentError, 'must provide either a presence or a type and destination' if (type.nil? || destination.nil?) && presence.nil?
       request_obj = {
-          method: 'realm.otp_challenge'
+        method: 'realm.otp_challenge'
       }
       unless data.nil?
         data = data.to_json unless data.is_a?String
         request_obj[:data] = data
       end
-
 
       if presence.nil?
         raise ArgumentError, "request type must one of 'sms-otp-6' or 'sms-otp-8'" unless %w(sms-otp-6 sms-otp-8).include? type
