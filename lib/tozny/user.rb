@@ -6,33 +6,31 @@ module Tozny
     def initialize(realm_key_id, api_url = nil)
       if !api_url.nil?
         self.api_url = api_url
-      elsif !(ENV['API_URL'].nil?)
-        self.api_url=ENV['API_URL']
+      elsif !(ENV['API_URL'].nil?) # rubocop:disable all
+        self.api_url = ENV['API_URL']
       else
-        self.api_url='https://api.tozny.com/index.php'
+        self.api_url = 'https://api.tozny.com/index.php'
       end
 
-      unless self.api_url.is_a? URI
-        self.api_url = URI.parse(self.api_url)
-      end
+      self.api_url = URI.parse(self.api_url) unless self.api_url.is_a? URI
 
-      self.set_new_realm(realm_key_id)
+      set_new_realm(realm_key_id)
     end
 
     # check the status of a session
     # @param [String] session_id the session to check
     # @return [TrueClass, FalseClass] 'true' if the use has logged in with the session, false otherwise
     def check_session_status(session_id)
-      raw_call({
+      raw_call(
         method: 'user.check_session_status',
         session_id: session_id
-        }).key?(:signed_data)
+      ).key?(:signed_data)
     end
 
     # use a new realm_key_id
     # @param [String] realm_key_id
     # @return [TrueClass] will always return true
-    def set_new_realm (realm_key_id)
+    def set_new_realm(realm_key_id) # rubocop:disable Style/AccessorMethodName
       self.realm_key_id = realm_key_id
       true
     end
@@ -46,7 +44,6 @@ module Tozny
       }
       request_obj[:user_add] = user_add if user_add
       raw_call request_obj
-
     end
 
     # Perform a raw(ish) API call
@@ -59,7 +56,7 @@ module Tozny
       end
       request_url = api_url # copy the URL to a local variable so that we can add the query params
       request_url.query = URI.encode_www_form request_obj # encode request as query params
-      #p request_url
+      # p request_url
       JSON.parse(Net::HTTP.get(request_url), symbolize_names: true)
     end
   end

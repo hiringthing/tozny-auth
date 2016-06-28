@@ -1,5 +1,7 @@
 Metrics/LineLength:
   Enabled: false
+Metrics/MethodLength:
+  Enabled: false
 Rails:
   Enabled: false
 Style/SpaceInsideHashLiteralBraces:
