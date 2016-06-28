@@ -1,3 +1,5 @@
+# rubocop:disable Style/VariableName
+
 require 'test_helper'
 require 'openssl'
 class Tozny::AuthTest < Minitest::Test
@@ -44,17 +46,18 @@ Ok7+tYSk4rtO10wFQfcorrUnijEMDB0hX77/wuSVB4X3ERApwEjPTA==
   end
 
   def test_b64url_decode
-    assert ::Tozny::Core::base64url_decode('dGVzdG9kZHBhZA') == 'testoddpad'
+    assert ::Tozny::Core.base64url_decode('dGVzdG9kZHBhZA') == 'testoddpad'
   end
 
   def test_b64url_encode
-    assert ::Tozny::Core::base64url_encode('testoddpad') == 'dGVzdG9kZHBhZA'
+    assert ::Tozny::Core.base64url_encode('testoddpad') == 'dGVzdG9kZHBhZA'
   end
 
   def test_check_signature
-    assert ::Tozny::Core::check_signature('0e8ebea5a44f8d126102f4413335bb257a56e349a9584815a2c517c64fdc7491',
-                                          'this is a test string for HMAC hashing in tozny\'s SDK-Ruby',
-                                          @@Test_Secret)
+    assert ::Tozny::Core.check_signature(
+      '0e8ebea5a44f8d126102f4413335bb257a56e349a9584815a2c517c64fdc7491',
+      'this is a test string for HMAC hashing in tozny\'s SDK-Ruby',
+      @@Test_Secret)
   end
 
   def test_encode_and_sign
