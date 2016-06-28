@@ -51,8 +51,8 @@ module Tozny
       encoded_sig = base64url_encode(sig)
       return {
           #behold, the rare return statement
-          :signed_data => encoded_data,
-          :signature => encoded_sig
+          signed_data: encoded_data,
+          signature: encoded_sig
       }
     end
 

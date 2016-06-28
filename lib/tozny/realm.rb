@@ -62,9 +62,9 @@ module Tozny
     # @return [Hash] the return from the API
     def check_login_via_api(user_id, session_id) #NOTE: this only returns true/false. You need to parse the data locally. See Tozny::Core.base64url_decode
       raw_call({
-        :method => 'realm.check_valid_login',
-        :user_id => user_id,
-        :session_id => session_id
+        method: 'realm.check_valid_login',
+        user_id: user_id,
+        session_id: session_id
       })[:return] == 'true'
     end
 
@@ -83,8 +83,8 @@ module Tozny
       end
 
       request_obj = {
-          :method => 'realm.user_add',
-          :defer => defer
+          method: 'realm.user_add',
+          defer: defer
       }
       if defer == 'false'
         raise ArgumentError, 'Must provide a public key if not using deferred enrollment' if pub_key.nil?
@@ -107,9 +107,9 @@ module Tozny
     # @return [Hash] the updated user
     def user_update(user_id, meta)
       raw_call({
-          :method => 'realm.user_update',
-          :user_id => user_id,
-          :extra_fields => Tozny::Core::base64url_encode(meta.to_json)
+          method: 'realm.user_update',
+          user_id: user_id,
+          extra_fields: Tozny::Core::base64url_encode(meta.to_json)
                })
     end
 
@@ -117,8 +117,8 @@ module Tozny
     # @return [Hash] the result of the request to the API
     def user_delete(user_id)
       raw_call({
-               :method => 'realm.user_delete',
-               :user_id => user_id
+               method: 'realm.user_delete',
+               user_id: user_id
                })
     end
 
@@ -130,7 +130,7 @@ module Tozny
     # @raise ArgumentError on failed lookup
     def user_get(user_id, is_id = true)
       request_obj = {
-          :method => 'realm.user_get'
+          method: 'realm.user_get'
       }
       if is_id
         request_obj[:user_id] = user_id
@@ -150,8 +150,8 @@ module Tozny
     # @return [Hash] the result of the call: keys include  :user_id, :temp_key, :secret_enrollment_url, and :key_id
     def user_device_add(user_id)
       raw_call({
-          :method=>'realm.user_device_add',
-          :user_id=>user_id
+          method:'realm.user_device_add',
+          user_id:user_id
                })
     end
 
@@ -175,21 +175,21 @@ module Tozny
       else
         if success_url.is_a?String or error_url.is_a?String
           final_question = {
-              :type => 'callback',
-              :question => question
+              type: 'callback',
+              question: question
           }
           final_question[:success] = success_url if success_url.is_a?String
           final_question[:error] = error_url if error_url.is_a?String
         else
           final_question = {
-              :type => 'question',
-              :question => question
+              type: 'question',
+              question: question
           }
         end
       end
       request_obj = {
-          :method => 'realm.question_challenge',
-          :question => final_question
+          method: 'realm.question_challenge',
+          question: final_question
       }
       request_obj[:user_id] = user_id if user_id.is_a?String
       raw_call request_obj
@@ -207,8 +207,8 @@ module Tozny
       p "type: #{type}, dest: #{destination}, pres: #{presence}, data: #{data}"
       raise ArgumentError, 'must provide either a presence or a type and destination' if ((type.nil? || destination.nil?) && presence.nil?)
       request_obj = {
-          :method => 'realm.otp_challenge',
-          :data => data
+          method: 'realm.otp_challenge',
+          data: data
       }
       if presence.nil?
         raise ArgumentError, ("request type must one of 'sms-otp-6' or 'sms-otp-8'") unless (%w(sms-otp-6 sms-otp-8).include? type)
@@ -233,8 +233,8 @@ module Tozny
           (user_id.nil? && email.nil? && username.nil?)
       session_id ||= user_api.login_challenge[:session_id]
       request_obj = {
-          :method => 'realm.user_push',
-          :session_id => session_id
+          method: 'realm.user_push',
+          session_id: session_id
       }
       if !user_id.nil?
         request_obj[:user_id] = user_id
@@ -261,7 +261,7 @@ module Tozny
       request_url.query = URI.encode_www_form encoded_params #encode signed_data and signature as query params
       #p request_url
       http_result = Net::HTTP.get(request_url)
-      JSON.parse(http_result, {:symbolize_names => true}) #TODO: handle errors
+      JSON.parse(http_result, {symbolize_names: true}) #TODO: handle errors
     end
   end
 end

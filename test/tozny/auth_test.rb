@@ -57,26 +57,27 @@ Ok7+tYSk4rtO10wFQfcorrUnijEMDB0hX77/wuSVB4X3ERApwEjPTA==
     assert ::Tozny::Core.check_signature(
       '0e8ebea5a44f8d126102f4413335bb257a56e349a9584815a2c517c64fdc7491',
       'this is a test string for HMAC hashing in tozny\'s SDK-Ruby',
-      @@Test_Secret)
+      @@Test_Secret
+    )
   end
 
   def test_encode_and_sign
     assert_equal ({
-      :signed_data => 'anVzdCB5ZXQgYW5vdGhlciB0ZXN0Li4u',
-      :signature => '9YmUp89gLTrrkODNWBgUI3KmLsKYb4bQ-_4JoxqJE_k'
+      signed_data: 'anVzdCB5ZXQgYW5vdGhlciB0ZXN0Li4u',
+      signature: '9YmUp89gLTrrkODNWBgUI3KmLsKYb4bQ-_4JoxqJE_k'
     }), ::Tozny::Core.encode_and_sign('just yet another test...', @@Test_Secret)
   end
 
   def test_realm_call
-    assert @realm.raw_call(:method => 'realm.realm_get')[:return] == 'ok'
+    assert @realm.raw_call(method: 'realm.realm_get')[:return] == 'ok'
   end
 
   def test_smoke_test_call
-    assert @user.raw_call(:method => 'test.smoke', :do_smoke => TRUE)[:return] == 'ok'
+    assert @user.raw_call(method: 'test.smoke', do_smoke: TRUE)[:return] == 'ok'
   end
 
   def test_smoke_test_call_via_realm
-    assert @realm.user_api.raw_call(:method => 'test.smoke', :do_smoke => TRUE)[:return] == 'ok'
+    assert @realm.user_api.raw_call(method: 'test.smoke', do_smoke: TRUE)[:return] == 'ok'
   end
 
   def test_create_delete_user
