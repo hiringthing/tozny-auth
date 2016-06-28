@@ -3,6 +3,8 @@ require 'json'
 require 'net/http'
 require 'uri'
 
+# rubocop:disable Metrics/PerceivedComplexity
+
 module Tozny
   class Realm
     attr_accessor :realm_key_id, :realm_secret, :api_url, :user_api
@@ -173,7 +175,7 @@ module Tozny
         final_question = question
         final_question[:type] = 'callback'
       else
-        if success_url.is_a?String or error_url.is_a?String
+        if (success_url.is_a?String) || (error_url.is_a?String)
           final_question = {
               type: 'callback',
               question: question
@@ -205,13 +207,13 @@ module Tozny
     # @raise ArgumentError on invalid request type
     def otp_challenge(type, destination, presence=nil, data=nil)
       p "type: #{type}, dest: #{destination}, pres: #{presence}, data: #{data}"
-      raise ArgumentError, 'must provide either a presence or a type and destination' if ((type.nil? || destination.nil?) && presence.nil?)
+      raise ArgumentError, 'must provide either a presence or a type and destination' if (type.nil? || destination.nil?) && presence.nil?
       request_obj = {
           method: 'realm.otp_challenge',
           data: data
       }
       if presence.nil?
-        raise ArgumentError, ("request type must one of 'sms-otp-6' or 'sms-otp-8'") unless (%w(sms-otp-6 sms-otp-8).include? type)
+        raise ArgumentError, "request type must one of 'sms-otp-6' or 'sms-otp-8'" unless %w(sms-otp-6 sms-otp-8).include? type
         request_obj[:type] = type
         # TODO: consider validating that 'destination' is a valid phone number when 'type' is sms-otp-*
         request_obj[:destination] = destination
@@ -228,13 +230,13 @@ module Tozny
     # @param [String] email optional an email for a field associated with tozny_email
     # @param [String] username optional a username for a field associated with tozny_username
     # @return [Hash {Symbol => String, Integer, Array<TrueClass, FalseClass>}] the result of the push attempt. Will be true if any device owned by the user is successfully sent a push.
-    def user_push(session_id= nil, user_id = nil, email = nil, username = nil)
-      raise ArgumentError, ("must provide either a Tozny user id, a tozny_email, or a tozny_username in order to find the user to push to") if
-          (user_id.nil? && email.nil? && username.nil?)
+    def user_push(session_id = nil, user_id = nil, email = nil, username = nil)
+      raise ArgumentError, 'must provide either a Tozny user id, a tozny_email, or a tozny_username in order to find the user to push to' if
+          user_id.nil? && email.nil? && username.nil?
       session_id ||= user_api.login_challenge[:session_id]
       request_obj = {
-          method: 'realm.user_push',
-          session_id: session_id
+        method: 'realm.user_push',
+        session_id: session_id
       }
       if !user_id.nil?
         request_obj[:user_id] = user_id
@@ -250,18 +252,18 @@ module Tozny
     # @param [Hash{Symbol, String => Object}] request_obj The request to conduct. Should include a :method at the least. Prefer symbol keys to string keys
     # @return [Object] The parsed result of the request. NOTE: most types will be stringified for most requests
     def raw_call(request_obj)
-      request_obj[:nonce] = Tozny::Core.generate_nonce #generate the nonce
-      request_obj[:expires_at] = Time.now.to_i + 5*60 # UNIX timestamp for now +5 min TODO: does this work with check_login_via_api, or should it default to a passed in expires_at?
-      unless request_obj.key?('realm_key_id') || request_obj.key?(:realm_key_id) #check for both string and symbol
-        #TODO: how should we handle conflicts of symbol and string keys?
+      request_obj[:nonce] = Tozny::Core.generate_nonce # generate the nonce
+      request_obj[:expires_at] = Time.now.to_i + 5 * 60 # UNIX timestamp for now +5 min TODO: does this work with check_login_via_api, or should it default to a passed in expires_at?
+      unless request_obj.key?('realm_key_id') || request_obj.key?(:realm_key_id) # check for both string and symbol
+        # TODO: how should we handle conflicts of symbol and string keys?
         request_obj[:realm_key_id] = realm_key_id
       end
-      encoded_params = Tozny::Core.encode_and_sign(request_obj.to_json, realm_secret) #make a proper request of it.
-      request_url = api_url #copy the URL to a local variable so that we can add the query params
-      request_url.query = URI.encode_www_form encoded_params #encode signed_data and signature as query params
-      #p request_url
+      encoded_params = Tozny::Core.encode_and_sign(request_obj.to_json, realm_secret) # make a proper request of it.
+      request_url = api_url # copy the URL to a local variable so that we can add the query params
+      request_url.query = URI.encode_www_form encoded_params # encode signed_data and signature as query params
+      # p request_url
       http_result = Net::HTTP.get(request_url)
-      JSON.parse(http_result, {symbolize_names: true}) #TODO: handle errors
+      JSON.parse(http_result, symbolize_names: true) # TODO: handle errors
     end
   end
 end
