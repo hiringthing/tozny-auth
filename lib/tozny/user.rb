@@ -53,7 +53,7 @@ module Tozny
     # @param [String] presence can be used instead of 'type' and 'destination': an OTP presence provided by the TOZNY API
     # @raise ArgumentError when not enough information to submit an OTP request
     # @raise ArgumentError on invalid request type
-    def otp_challenge(type, destination, presence = nil)
+    def otp_challenge(type = nil, destination = nil, presence = nil)
       raise ArgumentError, 'must provide either a presence or a type and destination' if (type.nil? || destination.nil?) && presence.nil?
       request_obj = {
         method: 'user.otp_challenge'

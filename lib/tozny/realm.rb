@@ -198,7 +198,7 @@ module Tozny
     # @param [Object] data optional passthru data to be added to the signed response on a successful request
     # @raise ArgumentError when not enough information to submit an OTP request
     # @raise ArgumentError on invalid request type
-    def otp_challenge(type, destination, presence = nil, data = nil)
+    def otp_challenge(type = nil, destination = nil, presence = nil, data = nil)
       raise ArgumentError, 'must provide either a presence or a type and destination' if (type.nil? || destination.nil?) && presence.nil?
       request_obj = {
         method: 'realm.otp_challenge'
