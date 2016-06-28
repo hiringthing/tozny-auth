@@ -54,7 +54,6 @@ module Tozny
     # @raise ArgumentError when not enough information to submit an OTP request
     # @raise ArgumentError on invalid request type
     def otp_challenge(type, destination, presence=nil)
-      p "type: #{type}, dest: #{destination}, pres: #{presence}, data: #{data}"
       raise ArgumentError, 'must provide either a presence or a type and destination' if (type.nil? || destination.nil?) && presence.nil?
       request_obj = {
           method: 'user.otp_challenge'
@@ -72,7 +71,7 @@ module Tozny
 
     # Check an OTP against an OTP session
     # @param [String] session_id the OTP session to validate
-    # @param [String] otp the OTP to check
+    # @param [String, Integer] otp the OTP to check
     # @return [Hash] The signed_data and signature containing a session ID and metadata, if any, on success. Otherwise, error[s].
     def otp_result(session_id, otp)
       raw_call(method: 'user.otp_result', session_id: session_id, otp: otp)

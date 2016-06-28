@@ -206,12 +206,16 @@ module Tozny
     # @raise ArgumentError when not enough information to submit an OTP request
     # @raise ArgumentError on invalid request type
     def otp_challenge(type, destination, presence=nil, data=nil)
-      p "type: #{type}, dest: #{destination}, pres: #{presence}, data: #{data}"
       raise ArgumentError, 'must provide either a presence or a type and destination' if (type.nil? || destination.nil?) && presence.nil?
       request_obj = {
-          method: 'realm.otp_challenge',
-          data: data
+          method: 'realm.otp_challenge'
       }
+      unless data.nil?
+        data = data.to_json unless data.is_a?String
+        request_obj[:data] = data
+      end
+
+
       if presence.nil?
         raise ArgumentError, "request type must one of 'sms-otp-6' or 'sms-otp-8'" unless %w(sms-otp-6 sms-otp-8).include? type
         request_obj[:type] = type
