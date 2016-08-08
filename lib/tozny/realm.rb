@@ -219,6 +219,24 @@ module Tozny
       raw_call request_obj
     end
 
+    # Create an email challenge session
+    # @return [Hash] a hash of the session and presence for the challenge
+    # @param [String] destination The email address to which we will send a challenge
+    # @param [String] callback    URL to which Tozny should submit signed email verificaton
+    # @param [String] hostname    Hostname for the generated OTP URL
+    # @param [Bool]   send        Flag whether or not to send the email (if false will return the OTP URL instead)
+    def email_challenge(destination, callback = nil, hostname = nil, send = true)
+      request_obj = {
+          method: 'realm.email_challenge',
+          destination: destination,
+          send: !! send ? 'yes' : 'no' # Hacky double-bang to convert nil to false and anything else into a boolean
+      }
+      request_obj['callback'] = callback unless callback.nil?
+      request_obj['hostname'] = hostname unless hostname.nil?
+
+      raw_call request_obj
+    end
+
     # Shorthand method to send an 6-digit OTP via SMS without a presence token
     # @param destination @see(otp_challenge)
     # @param data @see(otp_challenge)
