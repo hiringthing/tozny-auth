@@ -77,6 +77,18 @@ module Tozny
       raw_call(method: 'user.otp_result', session_id: session_id, otp: otp)
     end
 
+    # Verify an email-based OTP
+    # @param [String] otp The OTP to validate
+    # @return [Hash] If successful, this request returns a redirect to the registered callback. Otherwise it returns a JSON array.
+    def email_result(otp)
+      params = {
+          method: 'user.email_result',
+          realm_key_id: realm_key_id,
+          otp: otp
+      }
+      raw_call(params)
+    end
+
     # Perform a raw(ish) API call
     # @param [Hash{Symbol, String => Object}] request_obj The request to conduct. Should include a :method at the least. Prefer symbol keys to string keys
     # @return [Object] The parsed result of the request. NOTE: most types will be stringified for most requests
