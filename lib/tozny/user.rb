@@ -69,6 +69,29 @@ module Tozny
       raw_call request_obj
     end
 
+    # Create a magic link challenge session
+    #
+    # @param [String] destination The email address or phone number to which we will send a challenge
+    # @param [String] context     One of "verify," "authenticate," or "enroll"
+    # @param [String] callback    URL to which Tozny should submit signed link verification
+    # @param [String] hostname    Hostname for the generated OTP URL
+    # @param [Bool]   send        Flag whether or not to send the email (if false will return the OTP URL instead)
+    #
+    # @return [Hash] a hash of the session and presence for the challenge
+    #
+    def link_challenge(destination, context = nil, callback = nil, hostname = nil, send = true)
+      request_obj = {
+          method: 'user.link_challenge',
+          destination: destination,
+          send: !! send ? 'yes' : 'no' # Hacky double-bang to convert nil to false and anything else into a boolean
+      }
+      request_obj['context'] = context unless context.nil?
+      request_obj['callback'] = callback unless callback.nil?
+      request_obj['hostname'] = hostname unless hostname.nil?
+
+      raw_call request_obj
+    end
+
     # Check an OTP against an OTP session
     # @param [String] session_id the OTP session to validate
     # @param [String, Integer] otp the OTP to check
@@ -77,12 +100,15 @@ module Tozny
       raw_call(method: 'user.otp_result', session_id: session_id, otp: otp)
     end
 
-    # Verify an email-based OTP
-    # @param [String] otp The OTP to validate
+    # Verify a magic link OTP
+    #
+    # @param [String] otp The OTP (usually embedded in a magic link)to validate
+    #
     # @return [Hash] If successful, this request returns a redirect to the registered callback. Otherwise it returns a JSON array.
-    def email_result(otp)
+    #
+    def link_result(otp)
       params = {
-          method: 'user.email_result',
+          method: 'user.link_result',
           realm_key_id: realm_key_id,
           otp: otp
       }

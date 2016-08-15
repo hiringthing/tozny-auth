@@ -219,18 +219,23 @@ module Tozny
       raw_call request_obj
     end
 
-    # Create an email challenge session
-    # @return [Hash] a hash of the session and presence for the challenge
-    # @param [String] destination The email address to which we will send a challenge
-    # @param [String] callback    URL to which Tozny should submit signed email verificaton
+    # Create a magic link challenge session
+    #
+    # @param [String] destination The email address or phone number to which we will send a challenge
+    # @param [String] context     One of "verify," "authenticate," or "enroll"
+    # @param [String] callback    URL to which Tozny should submit signed link verification
     # @param [String] hostname    Hostname for the generated OTP URL
     # @param [Bool]   send        Flag whether or not to send the email (if false will return the OTP URL instead)
-    def email_challenge(destination, callback = nil, hostname = nil, send = true)
+    #
+    # @return [Hash] a hash of the session and presence for the challenge
+    #
+    def link_challenge(destination, context = nil, callback = nil, hostname = nil, send = true)
       request_obj = {
-          method: 'realm.email_challenge',
+          method: 'realm.link_challenge',
           destination: destination,
           send: !! send ? 'yes' : 'no' # Hacky double-bang to convert nil to false and anything else into a boolean
       }
+      request_obj['context'] = context unless context.nil?
       request_obj['callback'] = callback unless callback.nil?
       request_obj['hostname'] = hostname unless hostname.nil?
 
