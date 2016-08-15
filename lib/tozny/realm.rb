@@ -196,9 +196,10 @@ module Tozny
     # @param [String] destination the destination for the OTP. For an SMS OTP, this should be a phone number
     # @param [String] presence can be used instead of 'type' and 'destination': an OTP presence provided by the TOZNY API
     # @param [Object] data optional passthru data to be added to the signed response on a successful request
+    # @param [String] context One of "verify," "authenticate," or "enroll"
     # @raise ArgumentError when not enough information to submit an OTP request
     # @raise ArgumentError on invalid request type
-    def otp_challenge(type = nil, destination = nil, presence = nil, data = nil)
+    def otp_challenge(type = nil, destination = nil, presence = nil, data = nil, context = nil)
       raise ArgumentError, 'must provide either a presence or a type and destination' if (type.nil? || destination.nil?) && presence.nil?
       request_obj = {
         method: 'realm.otp_challenge'
@@ -216,6 +217,9 @@ module Tozny
       else
         request_obj[:presence] = presence
       end
+
+      request_obj[:context] = context unless context.nil?
+
       raw_call request_obj
     end
 
