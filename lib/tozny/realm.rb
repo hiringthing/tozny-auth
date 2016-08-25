@@ -225,23 +225,25 @@ module Tozny
 
     # Create a magic link challenge session
     #
-    # @param [String] destination The email address or phone number to which we will send a challenge
-    # @param [String] context     One of "verify," "authenticate," or "enroll"
-    # @param [String] callback    URL to which Tozny should submit signed link verification
-    # @param [String] hostname    Hostname for the generated OTP URL
-    # @param [Bool]   send        Flag whether or not to send the email (if false will return the OTP URL instead)
+    # @param [String]  destination The email address or phone number to which we will send a challenge
+    # @param [String]  endpoint    URL endpoint to use as a base for the challenge URL
+    # @param [Integer] lifespan    Number of seconds for which the challenge URL is valid
+    # @param [String]  context     One of "verify," "authenticate," or "enroll"
+    # @param [Bool]    send        Flag whether or not to send the email (if false will return the OTP URL instead)
+    # @param [String]  data        JSON-encoded string of data to be signed along with the request
     #
     # @return [Hash] a hash of the session and presence for the challenge
     #
-    def link_challenge(destination, context = nil, callback = nil, hostname = nil, send = true)
+    def link_challenge(destination, endpoint, lifespan = nil, context = nil, send = true, data = nil)
       request_obj = {
           method: 'realm.link_challenge',
           destination: destination,
+          endpoint: endpoint,
           send: !! send ? 'yes' : 'no' # Hacky double-bang to convert nil to false and anything else into a boolean
       }
+      request_obj['lifespan'] = lifespan unless lifespan.nil?
       request_obj['context'] = context unless context.nil?
-      request_obj['callback'] = callback unless callback.nil?
-      request_obj['hostname'] = hostname unless hostname.nil?
+      request_obj['data'] = data unless data.nil?
 
       raw_call request_obj
     end
