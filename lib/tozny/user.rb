@@ -76,22 +76,18 @@ module Tozny
     # Create a magic link challenge session
     #
     # @param [String] destination The email address or phone number to which we will send a challenge
+    # @param [String] endpoint    URL endpoint to use as a base for the challenge URL
     # @param [String] context     One of "verify," "authenticate," or "enroll"
-    # @param [String] callback    URL to which Tozny should submit signed link verification
-    # @param [String] hostname    Hostname for the generated OTP URL
-    # @param [Bool]   send        Flag whether or not to send the email (if false will return the OTP URL instead)
     #
     # @return [Hash] a hash of the session and presence for the challenge
     #
-    def link_challenge(destination, context = nil, callback = nil, hostname = nil, send = true)
+    def link_challenge(destination, endpoint, context = nil)
       request_obj = {
           method: 'user.link_challenge',
           destination: destination,
-          send: !! send ? 'yes' : 'no' # Hacky double-bang to convert nil to false and anything else into a boolean
+          endpoint: endpoint
       }
       request_obj['context'] = context unless context.nil?
-      request_obj['callback'] = callback unless callback.nil?
-      request_obj['hostname'] = hostname unless hostname.nil?
 
       raw_call request_obj
     end
@@ -108,7 +104,7 @@ module Tozny
     #
     # @param [String] otp The OTP (usually embedded in a magic link)to validate
     #
-    # @return [Hash] If successful, this request returns a redirect to the registered callback. Otherwise it returns a JSON array.
+    # @return [Hash]
     #
     def link_result(otp)
       params = {
@@ -116,6 +112,28 @@ module Tozny
           realm_key_id: realm_key_id,
           otp: otp
       }
+      raw_call(params)
+    end
+
+    # Exchange a signed OTP challenge (from user.link_result or user.otp_result) for either an
+    # enrollment challenge (if the original context was "enroll") or a signed user payload (if
+    # the original context was "authenticate").
+    #
+    # @param [String] signed_data Signed data payload
+    # @param [String] signature   Realm-signed signature of the payload
+    # @param [String] session_id  If this was an authentication challenge, provide the session ID to close the session
+    #
+    # @return [Hash]
+    #
+    def challenge_exchange(signed_data, signature, session_id = nil)
+      params = {
+          method: 'user.challenge_exchange',
+          realm_key_id: realm_key_id,
+          signed_data: signed_data,
+          signature: signature
+      }
+      params['session_id'] = session_id unless session_id.nil?
+
       raw_call(params)
     end
 
