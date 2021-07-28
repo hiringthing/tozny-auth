@@ -1,3 +1,4 @@
+# This repository and product is deprecated. Please use https://github.com/tozny/e3db-ruby and https://tozny.com/tozid/
 # Tozny::Auth
 
 ## Installation
